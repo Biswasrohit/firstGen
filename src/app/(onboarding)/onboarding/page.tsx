@@ -42,7 +42,7 @@ export default function OnboardingPage() {
     updateProfile({
       countryOfOrigin: country,
       primaryCurrency: countryData ? getCountryCurrency(countryData.code) : "USD",
-      visaType: visaType as "student" | "work" | "immigrant" | "other",
+      visaType: visaType as "student" | "work" | "immigrant" | "citizen",
       hasSSN,
       hasBankAccount,
       sendsMoneyHome: sendsMoneyHome as "frequently" | "sometimes" | "no",

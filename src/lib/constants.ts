@@ -48,7 +48,7 @@ export const VISA_TYPES = [
   { value: "student", label: "Student (F-1/J-1)" },
   { value: "work", label: "Work (H-1B/L-1/OPT)" },
   { value: "immigrant", label: "Immigrant (Green Card)" },
-  { value: "other", label: "Other" },
+  { value: "citizen", label: "US Citizen" },
 ] as const;
 
 export const FINANCIAL_CONCERNS = [

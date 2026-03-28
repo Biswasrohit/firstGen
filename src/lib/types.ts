@@ -5,7 +5,7 @@ export interface UserProfile {
   university: string;
   countryOfOrigin: string;
   primaryCurrency: string;
-  visaType: "student" | "work" | "immigrant" | "other";
+  visaType: "student" | "work" | "immigrant" | "citizen";
   hasSSN: boolean;
   hasBankAccount: boolean;
   sendsMoneyHome: "frequently" | "sometimes" | "no";
