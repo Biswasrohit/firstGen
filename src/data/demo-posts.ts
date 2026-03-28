@@ -1,6 +1,6 @@
 import type { CommunityPost } from "@/lib/types";
 
-export const demoPosts: CommunityPost[] = [
+const demoPosts: CommunityPost[] = [
   {
     id: "post-1",
     authorId: "user-1",

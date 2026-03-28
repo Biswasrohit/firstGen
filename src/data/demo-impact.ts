@@ -1,4 +1,4 @@
-export interface ImpactStat {
+interface ImpactStat {
   label: string;
   value: number;
   prefix?: string;
@@ -6,20 +6,20 @@ export interface ImpactStat {
   icon: string;
 }
 
-export interface SavingsByCategory {
+interface SavingsByCategory {
   category: string;
   amount: number;
   color: string;
 }
 
-export interface UniversityRank {
+interface UniversityRank {
   rank: number;
   university: string;
   students: number;
   totalSaved: number;
 }
 
-export interface Testimonial {
+interface Testimonial {
   name: string;
   country: string;
   university: string;
