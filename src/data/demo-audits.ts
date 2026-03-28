@@ -1,6 +1,6 @@
 import type { FeeAudit } from "@/lib/types";
 
-export const demoAudits: Record<string, FeeAudit> = {
+const demoAudits: Record<string, FeeAudit> = {
   "bank:Chase Total Checking": {
     category: "bank",
     currentProvider: "Chase Total Checking",

@@ -71,21 +71,6 @@ export interface CommunityPost {
   createdAt: string;
 }
 
-export interface FinancialService {
-  id: string;
-  name: string;
-  provider: string;
-  category: "bank" | "remittance" | "phone" | "credit_card";
-  monthlyCost: number;
-  annualCost: number;
-  fees: string;
-  ssnRequired: boolean;
-  creditCheckRequired: boolean;
-  pros: string[];
-  cons: string[];
-  bestFor: string;
-}
-
 export interface CreditMilestone {
   month: number;
   title: string;

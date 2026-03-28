@@ -7,7 +7,7 @@ export interface CreditExplainerItem {
   icon: string;
 }
 
-export const creditExplainers: CreditExplainerItem[] = [
+const creditExplainers: CreditExplainerItem[] = [
   {
     id: "what-is-credit",
     question: "What is a credit score and why does it matter?",
@@ -31,7 +31,7 @@ export const creditExplainers: CreditExplainerItem[] = [
   },
 ];
 
-export const creditTimeline: CreditMilestone[] = [
+const creditTimeline: CreditMilestone[] = [
   {
     month: 1,
     title: "Get a Secured Card",

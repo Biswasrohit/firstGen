@@ -228,7 +228,7 @@ const nigeriaPlaybook: PlaybookStep[] = indiaPlaybook.map((step) => ({
   id: step.id.replace("ind", "ngr"),
 }));
 
-export const demoPlaybooks: Record<string, PlaybookStep[]> = {
+const demoPlaybooks: Record<string, PlaybookStep[]> = {
   India: indiaPlaybook,
   China: chinaPlaybook,
   Mexico: mexicoPlaybook,
