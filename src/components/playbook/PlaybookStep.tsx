@@ -4,20 +4,43 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
-import type { PlaybookStep as PlaybookStepType } from "@/lib/types";
+import type { PlaybookStep as PlaybookStepType, UserProfile } from "@/lib/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { SavingsComparison } from "./SavingsComparison";
+import { askFollowUp } from "@/app/actions/ask-followup";
+import { Loader2, MessageCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface PlaybookStepProps {
   step: PlaybookStepType;
   onMarkDone: (id: string) => void;
+  user: UserProfile;
 }
 
-export function PlaybookStepCard({ step, onMarkDone }: PlaybookStepProps) {
+export function PlaybookStepCard({ step, onMarkDone, user }: PlaybookStepProps) {
   const [expanded, setExpanded] = useState(step.status === "in_progress");
+  const [showAskQuestion, setShowAskQuestion] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isCompleted = step.status === "completed";
   const isLocked = step.status === "locked";
+
+  const handleAskQuestion = async () => {
+    if (!question.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const response = await askFollowUp(question, { step, user });
+      setAnswer(response);
+      toast.success("Got an answer!");
+    } catch {
+      toast.error("Failed to get an answer. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex gap-4">
@@ -132,6 +155,71 @@ export function PlaybookStepCard({ step, onMarkDone }: PlaybookStepProps) {
                     </ol>
                   </div>
                 )}
+
+                {/* Ask a Follow-up Question */}
+                <div className="mt-6 border-t border-surface-container-high pt-4">
+                  {!showAskQuestion ? (
+                    <button
+                      onClick={() => setShowAskQuestion(true)}
+                      className="flex items-center gap-2 text-sm text-primary hover:text-primary-dim transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Have a question about this step?
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs uppercase tracking-wider text-on-surface-variant">
+                        Ask a follow-up question
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={question}
+                          onChange={(e) => setQuestion(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && !isLoading && handleAskQuestion()}
+                          placeholder="e.g., What documents do I need?"
+                          className="flex-1 px-3 py-2 text-sm border border-surface-container-high rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          disabled={isLoading}
+                        />
+                        <button
+                          onClick={handleAskQuestion}
+                          disabled={isLoading || !question.trim()}
+                          className="px-4 py-2 bg-primary text-on-primary text-sm font-medium rounded-lg hover:bg-primary-dim transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            "Ask"
+                          )}
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowAskQuestion(false);
+                          setQuestion("");
+                          setAnswer(null);
+                        }}
+                        className="text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+                      >
+                        Cancel
+                      </button>
+
+                      {/* Answer Display */}
+                      {answer && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-3 bg-primary/5 rounded-xl p-4 border-l-4 border-primary"
+                        >
+                          <p className="text-xs uppercase tracking-wider text-primary mb-2">
+                            AI Response
+                          </p>
+                          <p className="text-sm text-on-surface leading-relaxed">{answer}</p>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Mark as done */}
                 {!isCompleted && (

@@ -22,6 +22,7 @@ export const UNIVERSITIES = [
 ] as const;
 
 export const COUNTRIES = [
+  { code: "US", name: "United States", flag: "\u{1F1FA}\u{1F1F8}", currency: "USD" },
   { code: "IN", name: "India", flag: "\u{1F1EE}\u{1F1F3}", currency: "INR" },
   { code: "CN", name: "China", flag: "\u{1F1E8}\u{1F1F3}", currency: "CNY" },
   { code: "MX", name: "Mexico", flag: "\u{1F1F2}\u{1F1FD}", currency: "MXN" },
