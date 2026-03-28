@@ -10,7 +10,7 @@ const STEPS = ["Identity", "Status", "Finances", "Goals"] as const;
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, updateProfile } = useAuth();
+  const { updateProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
 

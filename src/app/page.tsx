@@ -1,12 +1,17 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { CostOfMistakes } from "@/components/landing/CostOfMistakes";
 import { SocialProof } from "@/components/landing/SocialProof";
+import { DemoFastPath } from "@/components/shared/DemoFastPath";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
+      <Suspense fallback={null}>
+        <DemoFastPath />
+      </Suspense>
       <Navbar />
       <Hero />
       <HowItWorks />
