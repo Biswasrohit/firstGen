@@ -9,6 +9,7 @@ interface AnimatedCounterProps {
   suffix?: string;
   duration?: number;
   className?: string;
+  skipAnimation?: boolean;
 }
 
 export function AnimatedCounter({
@@ -17,13 +18,14 @@ export function AnimatedCounter({
   suffix = "",
   duration = 1.5,
   className = "",
+  skipAnimation = false,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
-  const [displayValue, setDisplayValue] = useState(0);
+  const [displayValue, setDisplayValue] = useState(skipAnimation ? target : 0);
 
   useEffect(() => {
-    if (!isInView) return;
+    if (skipAnimation || !isInView) return;
 
     const controls = animate(0, target, {
       duration,
@@ -34,7 +36,7 @@ export function AnimatedCounter({
     });
 
     return () => controls.stop();
-  }, [isInView, target, duration]);
+  }, [isInView, target, duration, skipAnimation]);
 
   return (
     <span ref={ref} className={className}>

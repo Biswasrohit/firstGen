@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 interface CreditScoreGaugeProps {
   score: number;
@@ -10,45 +11,72 @@ interface CreditScoreGaugeProps {
   minScore?: number;
 }
 
+/**
+ * Uses the circle + stroke-dasharray + stroke-dashoffset technique
+ * to draw a semicircular gauge. A circle is drawn with:
+ *   - strokeDasharray = dashLength + large gap (only one dash visible)
+ *   - strokeDashoffset = -πr (shifts start to bottom-left, i.e. 180°)
+ * This creates a clean semicircle with rounded linecaps.
+ */
+function semicircleArc(
+  radius: number,
+  widthPerc: number,
+  stroke: string,
+  strokeWidth: number,
+  cx: number,
+  cy: number,
+  opacity = 1,
+  offsetPerc = 0,
+) {
+  const halfCircumference = Math.PI * radius;
+  const dashLength = (halfCircumference * widthPerc) / 100;
+  const baseOffset = -halfCircumference;
+  const additionalOffset = -(halfCircumference * offsetPerc) / 100;
+
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={radius}
+      fill="none"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeDasharray={`${dashLength} 10000`}
+      strokeDashoffset={baseOffset + additionalOffset}
+      stroke={stroke}
+      opacity={opacity}
+    />
+  );
+}
+
 export function CreditScoreGauge({
   score,
   label,
   maxScore = 850,
   minScore = 300,
 }: CreditScoreGaugeProps) {
-  const ref = useRef<SVGSVGElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true });
 
-  const range = maxScore - minScore;
-  const normalized = (score - minScore) / range;
-  const sweepAngle = 180;
-  const rotation = normalized * sweepAngle;
+  const cx = 100;
+  const cy = 100;
+  const radius = 65;
+  const strokeWidth = 22;
 
-  // SVG arc parameters
-  const cx = 150;
-  const cy = 140;
-  const r = 110;
+  const halfCircumference = Math.PI * radius;
+  const scorePercentage = ((score - minScore) / (maxScore - minScore)) * 100;
+  const scoreDashLength = (halfCircumference * scorePercentage) / 100;
 
-  // Calculate arc path for the background
-  const startAngle = 180; // left side
-  const endAngle = 0; // right side
+  // Marker dot position on the semicircle
+  const markerAngle = Math.PI * (1 - scorePercentage / 100);
+  const markerX = cx + radius * Math.cos(markerAngle);
+  const markerY = cy - radius * Math.sin(markerAngle);
 
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-
-  const arcPath = (start: number, end: number) => {
-    const x1 = cx + r * Math.cos(toRad(start));
-    const y1 = cy + r * Math.sin(toRad(start));
-    const x2 = cx + r * Math.cos(toRad(end));
-    const y2 = cy + r * Math.sin(toRad(end));
-    return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
-  };
-
-  // Color based on score range
   const getColor = () => {
-    if (score < 580) return "#ac3434"; // poor
-    if (score < 670) return "#8c5100"; // fair
-    if (score < 740) return "#006973"; // good
-    return "#1b6d24"; // excellent
+    if (score < 580) return "#ac3434";
+    if (score < 670) return "#8c5100";
+    if (score < 740) return "#006973";
+    return "#1b6d24";
   };
 
   const getRating = () => {
@@ -59,91 +87,93 @@ export function CreditScoreGauge({
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <svg ref={ref} viewBox="0 0 300 170" className="w-full max-w-[280px]">
-        {/* Background arc */}
-        <path
-          d={arcPath(startAngle, endAngle)}
-          fill="none"
-          stroke="#e5e5e5"
-          strokeWidth="20"
-          strokeLinecap="round"
-        />
+    <div ref={ref} className="flex flex-col items-center">
+      {/* Gauge container -- clips to top half of the circle */}
+      <div className="relative w-[200px] h-[120px] overflow-hidden">
+        {/* SVG with the circle arcs */}
+        <div className="absolute inset-0">
+          <svg width="200" height="200">
+            <defs>
+              {/* Horizontal gradient: red (left) -> ochre -> teal -> green (right) */}
+              <linearGradient id="scoreArcGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#ac3434" />
+                <stop offset="40%" stopColor="#8c5100" />
+                <stop offset="65%" stopColor="#006973" />
+                <stop offset="100%" stopColor="#1b6d24" />
+              </linearGradient>
+            </defs>
 
-        {/* Colored segments */}
-        <path
-          d={arcPath(180, 144)}
-          fill="none"
-          stroke="#ac3434"
-          strokeWidth="20"
-          strokeLinecap="round"
-          opacity={0.3}
-        />
-        <path
-          d={arcPath(144, 108)}
-          fill="none"
-          stroke="#8c5100"
-          strokeWidth="20"
-          opacity={0.3}
-        />
-        <path
-          d={arcPath(108, 54)}
-          fill="none"
-          stroke="#006973"
-          strokeWidth="20"
-          opacity={0.3}
-        />
-        <path
-          d={arcPath(54, 0)}
-          fill="none"
-          stroke="#1b6d24"
-          strokeWidth="20"
-          strokeLinecap="round"
-          opacity={0.3}
-        />
+            {/* 1. Gray background -- full semicircle */}
+            {semicircleArc(radius, 100, "#e5e5e5", strokeWidth, cx, cy)}
 
-        {/* Needle */}
-        <motion.g
-          initial={{ rotate: 0 }}
-          animate={isInView ? { rotate: rotation } : { rotate: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-          style={{ originX: `${cx}px`, originY: `${cy}px` }}
-        >
-          <line
-            x1={cx}
-            y1={cy}
-            x2={cx - r + 25}
-            y2={cy}
-            stroke={getColor()}
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <circle cx={cx} cy={cy} r="6" fill={getColor()} />
-        </motion.g>
+            {/* 2. Animated score arc -- gradient from red to green */}
+            <motion.circle
+              cx={cx}
+              cy={cy}
+              r={radius}
+              fill="none"
+              strokeWidth={strokeWidth - 2}
+              strokeLinecap="round"
+              stroke="url(#scoreArcGradient)"
+              strokeDasharray={`${scoreDashLength} 10000`}
+              initial={{ strokeDashoffset: -halfCircumference + scoreDashLength }}
+              animate={
+                isInView
+                  ? { strokeDashoffset: -halfCircumference }
+                  : { strokeDashoffset: -halfCircumference + scoreDashLength }
+              }
+              transition={{ duration: 1.2, ease: [0.32, 0.72, 0, 1], delay: 0.2 }}
+            />
 
-        {/* Labels */}
-        <text x="30" y="165" className="text-[11px]" fill="#999" textAnchor="middle">
-          300
-        </text>
-        <text x="270" y="165" className="text-[11px]" fill="#999" textAnchor="middle">
-          850
-        </text>
-      </svg>
+            {/* 3. Score marker dot -- pops in at the end of the score arc */}
+            <motion.circle
+              cx={markerX}
+              cy={markerY}
+              r={strokeWidth / 2 - 1}
+              fill={getColor()}
+              stroke="#fef8f3"
+              strokeWidth={2.5}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+              transition={{ duration: 0.35, delay: 1.3, ease: "backOut" }}
+              style={{ transformOrigin: `${markerX}px ${markerY}px` }}
+            />
+          </svg>
+        </div>
 
-      <div className="text-center -mt-2">
-        <motion.p
+        {/* Min/Max labels */}
+        <div className="absolute bottom-0 left-0 right-0 text-center pb-0.5">
+          <p className="text-[11px] text-[#999] flex justify-between px-2">
+            <span>{minScore}</span>
+            <span>{maxScore}</span>
+          </p>
+        </div>
+      </div>
+
+      <div className="text-center -mt-1">
+        <p
           className="font-display text-4xl font-bold"
           style={{ color: getColor() }}
+        >
+          <AnimatedCounter target={score} duration={1.4} />
+        </p>
+        <motion.p
+          className="text-sm font-medium"
+          style={{ color: getColor() }}
+          initial={{ opacity: 0, y: 5 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 5 }}
+          transition={{ delay: 1.0, duration: 0.4 }}
+        >
+          {getRating()}
+        </motion.p>
+        <motion.p
+          className="text-xs text-on-surface-variant mt-1"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ delay: 1.2 }}
+          transition={{ delay: 1.2, duration: 0.4 }}
         >
-          {score}
+          {label}
         </motion.p>
-        <p className="text-sm font-medium" style={{ color: getColor() }}>
-          {getRating()}
-        </p>
-        <p className="text-xs text-on-surface-variant mt-1">{label}</p>
       </div>
     </div>
   );

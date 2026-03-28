@@ -142,7 +142,7 @@ export default function PlaybookPage() {
           </div>
 
           {/* Concierge tip */}
-          <div className="mt-6 bg-ochre-light/30 rounded-2xl p-5 border-l-4 border-ochre">
+          <div className="mt-6 bg-ochre-light/30 rounded-2xl p-5">
             <div className="flex items-start gap-3">
               <span className="text-lg">{"\u{1F4A1}"}</span>
               <div>

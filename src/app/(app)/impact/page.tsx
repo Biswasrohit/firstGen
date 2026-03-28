@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { TopNav } from "@/components/layout/TopNav";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
@@ -11,8 +12,23 @@ import {
   testimonials,
 } from "@/data/demo-impact";
 
+const ANIMATED_KEY = "firstgen_impact_animated";
+
 export default function ImpactPage() {
   const maxCategoryAmount = Math.max(...savingsByCategory.map((c) => c.amount));
+  const [hasAnimated, setHasAnimated] = useState(true); // default true to avoid flash
+  const checkedRef = useRef(false);
+
+  useEffect(() => {
+    if (checkedRef.current) return;
+    checkedRef.current = true;
+
+    const alreadyAnimated = sessionStorage.getItem(ANIMATED_KEY) === "true";
+    if (!alreadyAnimated) {
+      setHasAnimated(false);
+      sessionStorage.setItem(ANIMATED_KEY, "true");
+    }
+  }, []);
 
   return (
     <div>
@@ -25,9 +41,9 @@ export default function ImpactPage() {
             {impactStats.map((stat, idx) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
+                initial={hasAnimated ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1, ease: "easeOut" as const }}
+                transition={hasAnimated ? { duration: 0 } : { delay: idx * 0.1, ease: "easeOut" as const }}
                 className="bg-white rounded-2xl shadow-soft p-5 text-center"
               >
                 <span className="text-2xl block mb-2">{stat.icon}</span>
@@ -36,6 +52,7 @@ export default function ImpactPage() {
                     target={stat.value}
                     prefix={stat.prefix}
                     suffix={stat.suffix}
+                    skipAnimation={hasAnimated}
                   />
                 </p>
                 <p className="text-xs text-on-surface-variant mt-1">{stat.label}</p>
@@ -52,9 +69,9 @@ export default function ImpactPage() {
               {savingsByCategory.map((cat, idx) => (
                 <motion.div
                   key={cat.category}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={hasAnimated ? false : { opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + idx * 0.1, ease: "easeOut" as const }}
+                  transition={hasAnimated ? { duration: 0 } : { delay: 0.3 + idx * 0.1, ease: "easeOut" as const }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <p className="text-sm font-medium text-on-surface">{cat.category}</p>
@@ -66,9 +83,9 @@ export default function ImpactPage() {
                     <motion.div
                       className="h-full rounded-full"
                       style={{ backgroundColor: cat.color }}
-                      initial={{ width: 0 }}
+                      initial={hasAnimated ? false : { width: 0 }}
                       animate={{ width: `${(cat.amount / maxCategoryAmount) * 100}%` }}
-                      transition={{ duration: 1, delay: 0.5 + idx * 0.1, ease: "easeOut" as const }}
+                      transition={hasAnimated ? { duration: 0 } : { duration: 1, delay: 0.5 + idx * 0.1, ease: "easeOut" as const }}
                     />
                   </div>
                 </motion.div>
@@ -125,9 +142,9 @@ export default function ImpactPage() {
               {testimonials.map((t, idx) => (
                 <motion.div
                   key={t.name}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={hasAnimated ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + idx * 0.15, ease: "easeOut" as const }}
+                  transition={hasAnimated ? { duration: 0 } : { delay: 0.5 + idx * 0.15, ease: "easeOut" as const }}
                   className="bg-white rounded-2xl shadow-soft p-5"
                 >
                   <div className="flex items-center gap-2 mb-3">
